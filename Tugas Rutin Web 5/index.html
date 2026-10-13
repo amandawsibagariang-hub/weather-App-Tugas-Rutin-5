@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weather App - Tugas Rutin 5</title>
+
+    <style>
+
+        /* ================================
+           RESET
+        ================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        /* ================================
+           BODY
+        ================================= */
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #172554,
+                    #1e293b
+                );
+
+            color: white;
+
+            padding: 30px 15px;
+        }
+
+
+        /* ================================
+           CONTAINER
+        ================================= */
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+
+        /* ================================
+           HEADER
+        ================================= */
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #cbd5e1;
+            font-size: 16px;
+        }
+
+
+        /* ================================
+           SEARCH
+        ================================= */
+
+        .search-section {
+            background: rgba(255, 255, 255, 0.08);
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            backdrop-filter: blur(10px);
+
+            margin-bottom: 25px;
+        }
+
+        #weatherForm {
+            display: flex;
+            gap: 12px;
+        }
+
+        #cityInput {
+            flex: 1;
+
+            padding: 15px 18px;
+
+            border: none;
+            outline: none;
+
+            border-radius: 12px;
+
+            font-size: 16px;
+        }
+
+        #weatherForm button {
+            border: none;
+
+            padding: 0 25px;
+
+            border-radius: 12px;
+
+            cursor: pointer;
+
+            background: #ec4899;
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            transition: 0.3s;
+        }
+
+        #weatherForm button:hover {
+            background: #db2777;
+        }
+
+
+        /* ================================
+           UNIT BUTTON
+        ================================= */
+
+        .unit-section {
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-top: 20px;
+
+            color: #cbd5e1;
+        }
+
+        .unit-btn {
+            border: 1px solid #64748b;
+
+            background: transparent;
+
+            color: white;
+
+            padding: 7px 15px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+        }
+
+        .unit-btn.active {
+            background: #ec4899;
+
+            border-color: #ec4899;
+        }
+
+
+        /* ================================
+           LOADING
+        ================================= */
+
+        .loading {
+            text-align: center;
+
+            padding: 30px;
+
+            color: #cbd5e1;
+        }
+
+        .spinner {
+            width: 45px;
+            height: 45px;
+
+            border: 5px solid rgba(255,255,255,0.2);
+
+            border-top: 5px solid #ec4899;
+
+            border-radius: 50%;
+
+            margin: 0 auto 15px;
+
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+
+        /* ================================
+           ERROR
+        ================================= */
+
+        .error {
+            background: rgba(239, 68, 68, 0.15);
+
+            border: 1px solid #ef4444;
+
+            color: #fecaca;
+
+            padding: 15px;
+
+            border-radius: 12px;
+
+            text-align: center;
+
+            margin-bottom: 20px;
+        }
+
+
+        /* ================================
+           HIDDEN
+        ================================= */
+
+        .hidden {
+            display: none;
+        }
+
+
+        /* ================================
+           WEATHER CARD
+        ================================= */
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.08);
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            backdrop-filter: blur(10px);
+
+            margin-bottom: 25px;
+        }
+
+        .weather-main {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+        .location-label {
+            color: #94a3b8;
+
+            margin-bottom: 5px;
+        }
+
+        #cityName {
+            font-size: 34px;
+
+            margin-bottom: 8px;
+        }
+
+        #weatherDescription {
+            color: #cbd5e1;
+
+            text-transform: capitalize;
+
+            font-size: 18px;
+        }
+
+        .weather-icon-container img {
+            width: 120px;
+            height: 120px;
+        }
+
+
+        /* ================================
+           TEMPERATURE
+        ================================= */
+
+        .temperature {
+            font-size: 70px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            margin: 10px 0 25px;
+        }
+
+        #temperatureUnit {
+            font-size: 30px;
+
+            color: #cbd5e1;
+        }
+
+
+        /* ================================
+           WEATHER DETAILS
+        ================================= */
+
+        .weather-details {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 15px;
+        }
+
+        .detail-box {
+            background: rgba(255, 255, 255, 0.06);
+
+            border-radius: 15px;
+
+            padding: 18px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+        .detail-icon {
+            font-size: 28px;
+        }
+
+        .detail-box p {
+            color: #94a3b8;
+
+            font-size: 13px;
+
+            margin-bottom: 5px;
+        }
+
+        .detail-box strong {
+            font-size: 17px;
+        }
+
+
+        /* ================================
+           FORECAST
+        ================================= */
+
+        .forecast-section {
+            background: rgba(255, 255, 255, 0.08);
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            margin-bottom: 25px;
+        }
+
+        .forecast-section h2 {
+            margin-bottom: 20px;
+        }
+
+        .forecast-container {
+            display: grid;
+
+            grid-template-columns: repeat(5, 1fr);
+
+            gap: 12px;
+        }
+
+        .forecast-card {
+            background: rgba(255, 255, 255, 0.07);
+
+            border-radius: 15px;
+
+            padding: 18px;
+
+            text-align: center;
+        }
+
+        .forecast-date {
+            color: #cbd5e1;
+
+            font-size: 14px;
+
+            margin-bottom: 10px;
+        }
+
+        .forecast-card img {
+            width: 65px;
+            height: 65px;
+        }
+
+        .forecast-temp {
+            font-size: 20px;
+
+            font-weight: bold;
+
+            margin: 8px 0;
+        }
+
+        .forecast-description {
+            color: #94a3b8;
+
+            font-size: 13px;
+
+            text-transform: capitalize;
+        }
+
+
+        /* ================================
+           HISTORY
+        ================================= */
+
+        .history-section {
+            background: rgba(255, 255, 255, 0.08);
+
+            border-radius: 20px;
+
+            padding: 25px;
+
+            margin-bottom: 25px;
+        }
+
+        .history-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+        .history-header h2 {
+            font-size: 22px;
+        }
+
+        #clearHistoryBtn {
+            border: none;
+
+            background: #ef4444;
+
+            color: white;
+
+            padding: 8px 12px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+        }
+
+        #clearHistoryBtn:hover {
+            background: #dc2626;
+        }
+
+        .history-list {
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+
+            border: 1px solid rgba(255,255,255,0.1);
+
+            color: white;
+
+            padding: 10px 15px;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+        }
+
+        .history-item:hover {
+            background: #ec4899;
+        }
+
+        .empty-history {
+            color: #94a3b8;
+        }
+
+
+        /* ================================
+           FOOTER
+        ================================= */
+
+        footer {
+            text-align: center;
+
+            color: #64748b;
+
+            padding: 20px;
+
+            line-height: 1.8;
+        }
+
+
+        /* ================================
+           RESPONSIVE
+        ================================= */
+
+        @media (max-width: 768px) {
+
+            body {
+                padding: 20px 10px;
+            }
+
+            header h1 {
+                font-size: 32px;
+            }
+
+            #weatherForm {
+                flex-direction: column;
+            }
+
+            #weatherForm button {
+                padding: 14px;
+            }
+
+            .weather-main {
+                flex-direction: column;
+
+                text-align: center;
+            }
+
+            #cityName {
+                font-size: 28px;
+            }
+
+            .temperature {
+                font-size: 55px;
+            }
+
+            .weather-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .forecast-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 480px) {
+
+            header h1 {
+                font-size: 27px;
+            }
+
+            .weather-card,
+            .search-section,
+            .forecast-section,
+            .history-section {
+                padding: 18px;
+            }
+
+            .weather-details {
+                grid-template-columns: 1fr;
+            }
+
+            .forecast-container {
+                grid-template-columns: 1fr;
+            }
+
+            .temperature {
+                font-size: 48px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+
+        <!-- ==================================
+             HEADER
+        =================================== -->
+
+        <header>
+
+            <h1>
+                🌤️ Weather App
+            </h1>
+
+            <p>
+                Tugas Rutin 5 - Aplikasi Informasi Cuaca
+            </p>
+
+        </header>
+
+
+        <!-- ==================================
+             SEARCH
+        =================================== -->
+
+        <section class="search-section">
+
+            <form id="weatherForm">
+
+                <input
+                    type="text"
+                    id="cityInput"
+                    placeholder="Masukkan nama kota..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button type="submit">
+                    🔍 Cari
+                </button>
+
+            </form>
+
+
+            <div class="unit-section">
+
+                <span>
+                    Unit suhu:
+                </span>
+
+                <button
+                    id="celsiusBtn"
+                    class="unit-btn active"
+                >
+                    °C
+                </button>
+
+                <button
+                    id="fahrenheitBtn"
+                    class="unit-btn"
+                >
+                    °F
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================
+             LOADING
+        =================================== -->
+
+        <div
+            id="loading"
+            class="loading hidden"
+        >
+
+            <div class="spinner"></div>
+
+            <p>
+                Mengambil data cuaca...
+            </p>
+
+        </div>
+
+
+        <!-- ==================================
+             ERROR
+        =================================== -->
+
+        <div
+            id="errorMessage"
+            class="error hidden"
+        >
+
+            <span id="errorText"></span>
+
+        </div>
+
+
+        <!-- ==================================
+             CURRENT WEATHER
+        =================================== -->
+
+        <section
+            id="weatherCard"
+            class="weather-card hidden"
+        >
+
+            <div class="weather-main">
+
+                <div>
+
+                    <p class="location-label">
+                        📍 Lokasi
+                    </p>
+
+                    <h2 id="cityName">
+                        -
+                    </h2>
+
+                    <p id="weatherDescription">
+                        -
+                    </p>
+
+                </div>
+
+
+                <div class="weather-icon-container">
+
+                    <img
+                        id="weatherIcon"
+                        src=""
+                        alt="Ikon cuaca"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="temperature">
+
+                <span id="temperature">
+                    -
+                </span>
+
+                <span id="temperatureUnit">
+                    °C
+                </span>
+
+            </div>
+
+
+            <div class="weather-details">
+
+
+                <div class="detail-box">
+
+                    <span class="detail-icon">
+                        💧
+                    </span>
+
+                    <div>
+
+                        <p>
+                            Kelembapan
+                        </p>
+
+                        <strong id="humidity">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <span class="detail-icon">
+                        🌬️
+                    </span>
+
+                    <div>
+
+                        <p>
+                            Kecepatan Angin
+                        </p>
+
+                        <strong id="windSpeed">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <span class="detail-icon">
+                        🌡️
+                    </span>
+
+                    <div>
+
+                        <p>
+                            Terasa Seperti
+                        </p>
+
+                        <strong id="feelsLike">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <span class="detail-icon">
+                        ☁️
+                    </span>
+
+                    <div>
+
+                        <p>
+                            Tekanan Udara
+                        </p>
+
+                        <strong id="pressure">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================
+             FORECAST
+        =================================== -->
+
+        <section
+            id="forecastSection"
+            class="forecast-section hidden"
+        >
+
+            <h2>
+                📅 Prakiraan Cuaca 5 Hari
+            </h2>
+
+            <div
+                id="forecastContainer"
+                class="forecast-container"
+            >
+            </div>
+
+        </section>
+
+
+        <!-- ==================================
+             SEARCH HISTORY
+        =================================== -->
+
+        <section class="history-section">
+
+            <div class="history-header">
+
+                <h2>
+                    🕘 Riwayat Pencarian
+                </h2>
+
+                <button id="clearHistoryBtn">
+                    Hapus Riwayat
+                </button>
+
+            </div>
+
+
+            <div id="historyContainer">
+
+                <p class="empty-history">
+                    Belum ada riwayat pencarian.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================
+             FOOTER
+        =================================== -->
+
+        <footer>
+
+            <p>
+                Weather App © 2026
+            </p>
+
+            <p>
+                Tugas Rutin 5 - Pemrograman Web
+            </p>
+
+        </footer>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+
+        // ==========================================
+        // API CONFIGURATION
+        // ==========================================
+
+        /*
+         * GANTI bagian di bawah ini dengan API KEY
+         * OpenWeatherMap milik kamu.
+         */
+
+        const API_KEY = "MASUKKAN_API_KEY_ANDA";
+
+
+        const WEATHER_URL =
+            "https://api.openweathermap.org/data/2.5/weather";
+
+
+        const FORECAST_URL =
+            "https://api.openweathermap.org/data/2.5/forecast";
+
+
+        // ==========================================
+        // DOM ELEMENTS
+        // ==========================================
+
+        const weatherForm =
+            document.getElementById("weatherForm");
+
+
+        const cityInput =
+            document.getElementById("cityInput");
+
+
+        const weatherCard =
+            document.getElementById("weatherCard");
+
+
+        const forecastSection =
+            document.getElementById("forecastSection");
+
+
+        const forecastContainer =
+            document.getElementById("forecastContainer");
+
+
+        const loading =
+            document.getElementById("loading");
+
+
+        const errorMessage =
+            document.getElementById("errorMessage");
+
+
+        const errorText =
+            document.getElementById("errorText");
+
+
+        const cityName =
+            document.getElementById("cityName");
+
+
+        const weatherDescription =
+            document.getElementById("weatherDescription");
+
+
+        const weatherIcon =
+            document.getElementById("weatherIcon");
+
+
+        const temperature =
+            document.getElementById("temperature");
+
+
+        const temperatureUnit =
+            document.getElementById("temperatureUnit");
+
+
+        const humidity =
+            document.getElementById("humidity");
+
+
+        const windSpeed =
+            document.getElementById("windSpeed");
+
+
+        const feelsLike =
+            document.getElementById("feelsLike");
+
+
+        const pressure =
+            document.getElementById("pressure");
+
+
+        const celsiusBtn =
+            document.getElementById("celsiusBtn");
+
+
+        const fahrenheitBtn =
+            document.getElementById("fahrenheitBtn");
+
+
+        const historyContainer =
+            document.getElementById("historyContainer");
+
+
+        const clearHistoryBtn =
+            document.getElementById("clearHistoryBtn");
+
+
+        // ==========================================
+        // APPLICATION STATE
+        // ==========================================
+
+        let currentWeatherData = null;
+
+        let currentForecastData = null;
+
+        let currentUnit = "metric";
+
+
+        // ==========================================
+        // EVENT LISTENER
+        // ==========================================
+
+        weatherForm.addEventListener(
+            "submit",
+            handleSearch
+        );
+
+
+        celsiusBtn.addEventListener(
+            "click",
+            () => {
+
+                currentUnit = "metric";
+
+                updateUnitButtons();
+
+
+                if (currentWeatherData) {
+
+                    displayWeather(
+                        currentWeatherData
+                    );
+
+                }
+
+
+                if (currentForecastData) {
+
+                    displayForecast(
+                        currentForecastData
+                    );
+
+                }
+
+            }
+        );
+
+
+        fahrenheitBtn.addEventListener(
+            "click",
+            () => {
+
+                currentUnit = "imperial";
+
+                updateUnitButtons();
+
+
+                if (currentWeatherData) {
+
+                    displayWeather(
+                        currentWeatherData
+                    );
+
+                }
+
+
+                if (currentForecastData) {
+
+                    displayForecast(
+                        currentForecastData
+                    );
+
+                }
+
+            }
+        );
+
+
+        clearHistoryBtn.addEventListener(
+            "click",
+            clearHistory
+        );
+
+
+        // ==========================================
+        // HANDLE SEARCH
+        // ==========================================
+
+        async function handleSearch(event) {
+
+            event.preventDefault();
+
+
+            const city =
+                cityInput.value.trim();
+
+
+            if (!city) {
+
+                showError(
+                    "Silakan masukkan nama kota terlebih dahulu."
+                );
+
+                return;
+            }
+
+
+            await getWeather(city);
+
+        }
+
+
+        // ==========================================
+        // GET WEATHER
+        // ==========================================
+
+        async function getWeather(city) {
+
+            showLoading(true);
+
+            hideError();
+
+
+            try {
+
+
+                // Mengecek API Key
+
+                if (
+                    API_KEY ===
+                    "66d17d71e7c121038af0eb8e4e9788c3"
+                ) {
+
+                    throw new Error(
+                        "API Key belum dimasukkan. Silakan isi API_KEY di dalam kode."
+                    );
+
+                }
+
+
+                // ==================================
+                // FETCH CURRENT WEATHER
+                // ==================================
+
+                const weatherResponse =
+                    await fetch(
+                        `${WEATHER_URL}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${currentUnit}&lang=id`
+                    );
+
+
+                // ==================================
+                // ERROR 404
+                // ==================================
+
+                if (
+                    weatherResponse.status === 404
+                ) {
+
+                    throw new Error(
+                        "Kota tidak ditemukan. Silakan periksa nama kota."
+                    );
+
+                }
+
+
+                // ==================================
+                // ERROR LAIN
+                // ==================================
+
+                if (!weatherResponse.ok) {
+
+                    throw new Error(
+                        `Terjadi kesalahan server. Kode: ${weatherResponse.status}`
+                    );
+
+                }
+
+
+                // Mengubah response menjadi JSON
+
+                const weatherData =
+                    await weatherResponse.json();
+
+
+                // ==================================
+                // FETCH FORECAST
+                // ==================================
+
+                const forecastResponse =
+                    await fetch(
+                        `${FORECAST_URL}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=${currentUnit}&lang=id`
+                    );
+
+
+                if (!forecastResponse.ok) {
+
+                    throw new Error(
+                        "Data prakiraan cuaca tidak dapat diambil."
+                    );
+
+                }
+
+
+                const forecastData =
+                    await forecastResponse.json();
+
+
+                // ==================================
+                // SIMPAN DATA
+                // ==================================
+
+                currentWeatherData =
+                    weatherData;
+
+
+                currentForecastData =
+                    forecastData;
+
+
+                // ==================================
+                // TAMPILKAN DATA
+                // ==================================
+
+                displayWeather(
+                    weatherData
+                );
+
+
+                displayForecast(
+                    forecastData
+                );
+
+
+                // ==================================
+                // LOCAL STORAGE
+                // ==================================
+
+                saveSearchHistory(
+                    weatherData.name
+                );
+
+
+                displaySearchHistory();
+
+
+            } catch (error) {
+
+
+                console.error(
+                    "Weather App Error:",
+                    error
+                );
+
+
+                showError(
+                    error.message ||
+                    "Terjadi kesalahan saat mengambil data cuaca."
+                );
+
+
+                weatherCard.classList.add(
+                    "hidden"
+                );
+
+
+                forecastSection.classList.add(
+                    "hidden"
+                );
+
+
+            } finally {
+
+
+                // Loading selalu dihentikan
+
+                showLoading(false);
+
+            }
+
+        }
+
+
+        // ==========================================
+        // DISPLAY WEATHER
+        // ==========================================
+
+        function displayWeather(data) {
+
+            weatherCard.classList.remove(
+                "hidden"
+            );
+
+
+            cityName.textContent =
+                `${data.name}, ${data.sys.country}`;
+
+
+            weatherDescription.textContent =
+                data.weather[0].description;
+
+
+            weatherIcon.src =
+                `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+
+            weatherIcon.alt =
+                data.weather[0].description;
+
+
+            temperature.textContent =
+                Math.round(data.main.temp);
+
+
+            temperatureUnit.textContent =
+                currentUnit === "metric"
+                    ? "°C"
+                    : "°F";
+
+
+            humidity.textContent =
+                `${data.main.humidity}%`;
+
+
+            windSpeed.textContent =
+                `${data.wind.speed} ${
+                    currentUnit === "metric"
+                        ? "m/s"
+                        : "mph"
+                }`;
+
+
+            feelsLike.textContent =
+                `${Math.round(data.main.feels_like)}${
+                    currentUnit === "metric"
+                        ? "°C"
+                        : "°F"
+                }`;
+
+
+            pressure.textContent =
+                `${data.main.pressure} hPa`;
+
+        }
+
+
+        // ==========================================
+        // DISPLAY FORECAST
+        // ==========================================
+
+        function displayForecast(data) {
+
+
+            forecastSection.classList.remove(
+                "hidden"
+            );
+
+
+            /*
+             * FILTER
+             *
+             * OpenWeatherMap memberikan data
+             * setiap 3 jam.
+             *
+             * Kita mengambil data pada pukul 12:00.
+             */
+
+            const dailyForecast =
+                data.list.filter(
+                    item =>
+                        item.dt_txt.includes(
+                            "12:00:00"
+                        )
+                );
+
+
+            /*
+             * MAP
+             *
+             * Digunakan untuk membuat
+             * HTML forecast.
+             */
+
+            const forecastHTML =
+                dailyForecast
+                    .slice(0, 5)
+                    .map(item => {
+
+
+                        const date =
+                            new Date(
+                                item.dt * 1000
+                            );
+
+
+                        const formattedDate =
+                            date.toLocaleDateString(
+                                "id-ID",
+                                {
+                                    weekday: "short",
+                                    day: "numeric",
+                                    month: "short"
+                                }
+                            );
+
+
+                        const temp =
+                            Math.round(
+                                item.main.temp
+                            );
+
+
+                        const unit =
+                            currentUnit === "metric"
+                                ? "°C"
+                                : "°F";
+
+
+                        return `
+
+                            <div class="forecast-card">
+
+                                <p class="forecast-date">
+                                    ${formattedDate}
+                                </p>
+
+                                <img
+                                    src="https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png"
+                                    alt="${item.weather[0].description}"
+                                >
+
+                                <p class="forecast-temp">
+                                    ${temp}${unit}
+                                </p>
+
+                                <p class="forecast-description">
+                                    ${item.weather[0].description}
+                                </p>
+
+                            </div>
+
+                        `;
+
+                    })
+                    .join("");
+
+
+            forecastContainer.innerHTML =
+                forecastHTML;
+
+        }
+
+
+        // ==========================================
+        // LOADING
+        // ==========================================
+
+        function showLoading(isLoading) {
+
+            if (isLoading) {
+
+                loading.classList.remove(
+                    "hidden"
+                );
+
+            } else {
+
+                loading.classList.add(
+                    "hidden"
+                );
+
+            }
+
+        }
+
+
+        // ==========================================
+        // ERROR
+        // ==========================================
+
+        function showError(message) {
+
+            errorText.textContent =
+                `⚠️ ${message}`;
+
+
+            errorMessage.classList.remove(
+                "hidden"
+            );
+
+        }
+
+
+        function hideError() {
+
+            errorMessage.classList.add(
+                "hidden"
+            );
+
+        }
+
+
+        // ==========================================
+        // UNIT BUTTON
+        // ==========================================
+
+        function updateUnitButtons() {
+
+
+            if (
+                currentUnit === "metric"
+            ) {
+
+                celsiusBtn.classList.add(
+                    "active"
+                );
+
+                fahrenheitBtn.classList.remove(
+                    "active"
+                );
+
+            } else {
+
+                fahrenheitBtn.classList.add(
+                    "active"
+                );
+
+                celsiusBtn.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+
+
+        // ==========================================
+        // SAVE HISTORY
+        // ==========================================
+
+        function saveSearchHistory(city) {
+
+
+            let history =
+                JSON.parse(
+                    localStorage.getItem(
+                        "weatherHistory"
+                    )
+                ) || [];
+
+
+            /*
+             * FILTER
+             *
+             * Menghapus kota yang sama
+             * agar tidak muncul berkali-kali.
+             */
+
+            history =
+                history.filter(
+                    item =>
+                        item.toLowerCase() !==
+                        city.toLowerCase()
+                );
+
+
+            // Kota terbaru di paling atas
+
+            history.unshift(city);
+
+
+            // Maksimal 5 riwayat
+
+            history =
+                history.slice(0, 5);
+
+
+            localStorage.setItem(
+                "weatherHistory",
+                JSON.stringify(history)
+            );
+
+        }
+
+
+        // ==========================================
+        // DISPLAY HISTORY
+        // ==========================================
+
+        function displaySearchHistory() {
+
+
+            const history =
+                JSON.parse(
+                    localStorage.getItem(
+                        "weatherHistory"
+                    )
+                ) || [];
+
+
+            if (history.length === 0) {
+
+                historyContainer.innerHTML = `
+
+                    <p class="empty-history">
+                        Belum ada riwayat pencarian.
+                    </p>
+
+                `;
+
+                return;
+
+            }
+
+
+            /*
+             * MAP
+             *
+             * Membuat tombol berdasarkan
+             * riwayat pencarian.
+             */
+
+            const historyHTML =
+                history
+                    .map(city => {
+
+                        return `
+
+                            <button
+                                class="history-item"
+                                onclick="searchFromHistory('${city}')"
+                            >
+                                📍 ${city}
+                            </button>
+
+                        `;
+
+                    })
+                    .join("");
+
+
+            historyContainer.innerHTML = `
+
+                <div class="history-list">
+
+                    ${historyHTML}
+
+                </div>
+
+            `;
+
+        }
+
+
+        // ==========================================
+        // SEARCH FROM HISTORY
+        // ==========================================
+
+        function searchFromHistory(city) {
+
+            cityInput.value = city;
+
+            getWeather(city);
+
+        }
+
+
+        // ==========================================
+        // CLEAR HISTORY
+        // ==========================================
+
+        function clearHistory() {
+
+            localStorage.removeItem(
+                "weatherHistory"
+            );
+
+            displaySearchHistory();
+
+        }
+
+
+        // ==========================================
+        // LOAD HISTORY
+        // ==========================================
+
+        displaySearchHistory();
+
+
+    </script>
+
+</body>
+
+</html>
